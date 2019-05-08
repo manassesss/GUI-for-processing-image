@@ -3,6 +3,7 @@ from tkinter import filedialog, Frame, Canvas
 import cv2
 from PIL import ImageTk, Image
 from skimage import color, filters, io, data, exposure, util
+from skimage.morphology import dilation, opening, closing, erosion
 import matplotlib
 import matplotlib.pyplot as plt 
 
@@ -14,25 +15,21 @@ janela.configure(background='#404238')
 
 # FUNÇÕES IMPLEMENTADAS 
 
-def showImage (master, x, y, w, h, *args, **kwargs) :
-	image = ImageTk.PhotoImage(Image.open(master.filename))
-	f = Frame(master, height=h, width=w)
-	f.pack_propagate(0)
-	f.place(x=x, y=y)
-	label = Label(f, image = image)
-	label.pack(side='right')
-	return label
+def showImage (master, *args, **kwargs) :
+	image = PhotoImage(file = master.filename)
+	label = Label(master, image = image)
+	label.pack()
+	#return label
 
 def openFile () :
 	global im
 	janela.filename = filedialog.askopenfilename(initialdir = "/", title= "Selecione o arquivo", filetypes=(("jpeg files", "*.jpg"), ("all files", "*.*"), ("png files", "*.png")))
-	#print(janela.filename)
-	#image = ImageTk.PhotoImage(Image.open(janela.filename))
-	#showImage(janela, 100,100,600,400)
+	#showImage(janela)
+
 	im=io.imread(janela.filename)
 	plt.imshow(im)
 	plt.show()
-	
+
 def saveFile() :
 	global im
 	im2 = filedialog.asksaveasfilename(initialfile='Unfield.jpg', defaultextension=".jpg", filetypes=(("jpeg files", "*.jpg"), ("all files", "*.*"), ("png files", "*.png")))
@@ -126,6 +123,30 @@ def colorHSI() :
 	plt.imshow(hsi)
 	plt.show()
 
+def morphErosion():
+	global im
+	e = color.rgb2gray(im)
+	e = erosion(e)
+	plt.imshow(e, cmap='gray')
+	plt.show()
+
+def morphDilation():
+	global im
+	e = dilation(im)
+	plt.imshow(e, cmap='gray')
+	plt.show()
+
+def morphOpening():
+	global im
+	e = opening(im)
+	plt.imshow(e, cmap='gray')
+	plt.show()
+
+def morphClosing():
+	global im
+	e = closing(im)
+	plt.imshow(e, cmap='gray')
+	plt.show()
 # ESTRUTURA DA INTERFACE
 menubar = Menu(janela)
 filemenu = Menu(menubar, tearoff=0)
@@ -150,11 +171,17 @@ filtersspacial.add_command(label="Mediana", command=medianFilter)
 filtersspacial.add_command(label="Media", command=averageFilter)
 #filtersspacial.add_command(label="Media ponderada")
 filtersspacial.add_command(label="Laplaciano", command=laplacianFilter)
+morphologymenu = Menu(menubar, tearoff=0)
+morphologymenu.add_command(label='Erosão', command=morphErosion)
+morphologymenu.add_command(label='Dilatação', command=morphDilation)
+morphologymenu.add_command(label='Abertura', command=morphOpening)
+morphologymenu.add_command(label='Fechamento', command=morphClosing)
 menubar.add_cascade(label="Arquivo", menu=filemenu)
 menubar.add_cascade(label="Realces", menu=highlightmenu)
 menubar.add_cascade(label="Histograma", menu=histogrammenu)
 menubar.add_cascade(label="Modelos de Cor", menu=modelscormenu)
 menubar.add_cascade(label="Filtros Espaciais", menu=filtersspacial)
+menubar.add_cascade(label="Morfologia", menu=morphologymenu)
 
 
 janela.config(menu=menubar)

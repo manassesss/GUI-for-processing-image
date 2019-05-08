@@ -1,19 +1,16 @@
-from tkinter import *
-from tkinter import filedialog, Frame, Canvas
+import numpy as np
 import cv2
-from PIL import ImageTk, Image
-from skimage import color, filters, io, data, exposure, util
+from cv2 import imread, morphologyEx
 import matplotlib
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+from skimage.morphology import erosion, dilation, opening, closing
 
-
-window = Tk()
-window.filename = filedialog.askopenfilename(initialdir = "/", title= "Selecione o arquivo", filetypes=(("jpeg files", "*.jpg"), ("all files", "*.*"), ("png files", "*.png")))
-f = Frame(window, height=400, width=400)
-f.pack_propagate(0)
-f.place(x=0, y=0)
-img = ImageTk.PhotoImage(Image.open(window.filename))
-label = Label(f, image = img)
-label.pack(fill=Y, expand = 0)
-
-window.mainloop()
+im = imread('screenshots/anne.jpg', 0)
+#e = erosion(im)
+#e = dilation (im)
+#e = opening (im)
+kernel = np.array(([0,1,0],[1,-1,1],[0,1,0]), dtype="int")
+e = morphologyEx(im, cv2.MORPH_HITMISS, kernel)
+e = im + e
+plt.imshow(e, cmap='gray')
+plt.show()
