@@ -34,7 +34,8 @@ def openFile () :
 	janela.filename = filedialog.askopenfilename(initialdir = "/", title= "Selecione o arquivo", filetypes=(("jpeg files", "*.jpg"), ("all files", "*.*"), ("png files", "*.png")))
 	im = io.imread(janela.filename)
 	img = Image.open(janela.filename)
-	
+
+	#opening an image in the interface
 	image = Image.open(janela.filename)
 	h, w = img.size[1], img.size[0] 
 	print(h, w)
@@ -64,6 +65,15 @@ def gamma() :
   apply.grid(row=0, column=2)
   
   gamma = exposure.adjust_gamma(im, 0.4)
+  gamma = color.rgb2gray(gamma)
+
+  h, w = gamma.shape[0], gamma.shape[1] 
+  print(h, w)
+  wdth, hght = w/1.5, h/1.5
+  resized = gamma.resize((int(wdth), int(hght)), Image.ANTIALIAS) #tentativa de ajustar o tamanho da imagem, entretanto não funciona para JPEG
+  photo = ImageTk.PhotoImage(resized)
+  ima = Label(frameLeft, image=photo, background='gray7')
+  ima.place(x= 0, y=0, width=900, height=600)
 
   plt.imshow(gamma, cmap='gray')
   plt.show()
@@ -217,13 +227,20 @@ def segCanny():
 def segPrewitty() :
 	global im
 	im = color.rgb2gray(im)
-	im_g = cv2.GaussianBlur(im, (3,3),0)
+	im_g = cv2.GaussianBlur(im, (3,3), 1)
 	kX = np.array([[1,1,1,],[0,0,0],[-1,-1,-1]])
 	kY = np.array([[-1,0,1,],[-1,0,1],[-1,0,1]])
 	im_pX = cv2.filter2D(im_g, -1, kX)
 	im_pY = cv2.filter2D(im_g, -1, kY)
 	im_p = im_pX + im_pY
 	plt.imshow(im_p, cmap='gray')
+	plt.show()
+
+def segLaplacian() :
+	global im
+	im = color.rgb2gray(im)
+	im = cv2.Laplacian(im, cv2.CV_64F)
+	plt.imshow(im, cmap='gray')
 	plt.show()
 
 
@@ -259,6 +276,10 @@ morphologymenu.add_command(label='Abertura', command=morphOpening)
 morphologymenu.add_command(label='Fechamento', command=morphClosing)
 noisymenu = Menu(menubar, tearoff=0)
 noisymenu.add_command(label="Sal e Pimenta", command=noiseSaltAndPepper)
+segmentationmenu = Menu(menubar, tearoff=0)
+segmentationmenu.add_command(label='Detector Canny', command=segCanny)
+segmentationmenu.add_command(label='Detector Prewitt', command=segPrewitty)
+segmentationmenu.add_command(label='Laplaciano da Gaussina (LoG)', command=segLaplacian)
 menubar.add_cascade(label="Arquivo", menu=filemenu)
 menubar.add_cascade(label="Realces", menu=highlightmenu)
 menubar.add_cascade(label="Histograma", menu=histogrammenu)
@@ -266,11 +287,10 @@ menubar.add_cascade(label="Modelos de Cor", menu=modelscormenu)
 menubar.add_cascade(label="Filtros Espaciais", menu=filtersspacial)
 menubar.add_cascade(label="Morfologia", menu=morphologymenu)
 menubar.add_cascade(label="Ruidos", menu=noisymenu)
+menubar.add_cascade(label="Segmentação", menu=segmentationmenu)
 
 
 janela.config(menu=menubar)
-
-
 
 
 janela.mainloop()
